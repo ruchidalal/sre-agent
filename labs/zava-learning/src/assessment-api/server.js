@@ -66,9 +66,12 @@ app.get("/health", (_req, res) => {
 
 app.get("/quiz/:courseId", async (req, res) => {
   const courseId = req.params.courseId.toUpperCase();
+  if (!/^[A-Z0-9]+(?:-[A-Z0-9]+)*$/.test(courseId)) {
+    return res.status(400).json({ error: "invalid_course_id" });
+  }
   if (COURSE_API_URL) {
     try {
-      const r = await fetch(`${COURSE_API_URL}/courses/${courseId}`, { signal: AbortSignal.timeout(4000) });
+      const r = await fetch(`${COURSE_API_URL}/courses/${encodeURIComponent(courseId)}`, { signal: AbortSignal.timeout(4000) });
       if (r.status === 404) return res.status(404).json({ error: "course_not_found", courseId });
     } catch (err) {
       // Upstream course-api unreachable (e.g. blocked network path) -> surface as 502.
