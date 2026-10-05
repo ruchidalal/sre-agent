@@ -51,7 +51,12 @@ app.get('/', async (req, res) => {
 // Product detail page
 app.get('/products/:id', async (req, res) => {
   try {
-    const { data } = await axios.get(`${API_URL}/api/products/${req.params.id}`, { timeout: 5000 });
+    const productId = Number(req.params.id);
+    if (!/^[1-9]\d*$/.test(req.params.id) || !Number.isSafeInteger(productId)) {
+      return res.status(404).send(renderErrorPage('Product not found'));
+    }
+
+    const { data } = await axios.get(`${API_URL}/api/products/${productId}`, { timeout: 5000 });
     res.send(renderProductPage(data));
   } catch (err) {
     console.error(JSON.stringify({ level: 'error', message: 'Product detail fetch failed', error: err.message, productId: req.params.id, timestamp: new Date().toISOString() }));
